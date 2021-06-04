@@ -1,169 +1,68 @@
-import React from 'react';
-import { StyleSheet, Text, View, Button, TouchableOpacity } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import React, { Component } from 'react';
+import { StyleSheet,SafeAreaView,  Insets, ImageBackground, Text,  ScrollView, View } from 'react-native';
 
-export default class App extends React.Component {
-  constructor(){
-    super();
-    this.state={
-      resultText: "",
-      calculationText: ""
-    };
-    this.operations=['DEL','+','-','x','/'];
-  }
-
-  calculateResult(){
-    const text = this.state.resultText
-    this.setState({
-      calculationText: eval(text)
-    })
-  }
-  validate(){
-    const text = this.state.resultText
-    switch(text.slice(-1)){
-      case '+':
-      case '-':
-      case 'x':
-      case '/':
-      return false
-    }
-    return true
-  }
+export default class App extends Component {
   
-
-  buttonPressed(text){
-    if(text == '='){
-      return this.validate() &&  this.calculateResult()
-    }
-    this.setState({
-      resultText: this.state.resultText+text
-    })
+constructor(){
+  super();
+  
+  this.state={
+    temp:'',
+    city:'',
+    feels_like:"",
+    temp_min: '',
+    temp_max: '',
+    pressure: '',
+    humidity: ''
   }
+  this.getWeather();
+};
 
-  operate(operation){
-    switch(operation) {
-      case 'DEL':
-              let text = this.state.resultText.split('')
-              text.pop()
-              this.setState({
-                resultText: text.join('')
-              })
-              break
-      case '+':
-      case '-':
-      case 'x':
-      case '/':
-              const lastChar = this.state.resultText.split('').pop()
+getLocation = ()=>{
+  
+}
 
-              if(this.operations.indexOf(lastChar) >0) return
-
-              if(this.state.resultText ==""){
-                return
-              }
-              this.setState({
-                resultText: this.state.resultText+operation
-              })
-
-    }
-  }
+ getWeather = async() => {
+     const response = await fetch("https://api.openweathermap.org/data/2.5/weather?q=raipur&units=metric&appid=bdcbe61c5d0c6df231e5493976c83b5b");
+     const data =await response.json();
+     console.log(data.main.temp) 
+     this.setState({
+        temp: data.main.temp,
+        city: data.name,
+        feels_like:data.main.feels_like,
+        temp_min:data.main.temp_min,
+        temp_max:data.main.temp_max,
+        pressure:data.main.pressure,
+        humidity:data.main.humidity
+      })
+  };
 
   
 
-  render() {
-    let rows =[];
-    let nums =[[1,2,3],[4,5,6],[7,8,9],['.',0,'=']];
-    for(let i=0; i<4;i++){
-      let row =[];
-      for(let j=0; j<3 ;j++){
-        row.push(<TouchableOpacity key={nums[i][j]} style={styles.btn}>
-                    <Text onPress={() => this.buttonPressed(nums[i][j])} style={styles.btntext}>{nums[i][j]}</Text>
-                 </TouchableOpacity>);
-      }
-      rows.push(<View key ={i} style={styles.row}>{row}</View>);
-    }
-
-    let ops = [];
-    for(let i=0; i<5; i++){
-      ops.push(<TouchableOpacity key={this.operations[i]} style={styles.btn} onPress={() => this.operate(this.operations[i])}>
-        <Text style={[styles.btntext]}>{this.operations[i]}</Text>
-     </TouchableOpacity>)
-    } 
-
+  render(){
     return (
-      <View style={styles.container}>
-        <View style={styles.result}>
-          <Text style={styles.resultText}>{this.state.resultText}</Text>
-        </View>
-        <View style={styles.calculation}>
-          <Text style={styles.calculationText}>{this.state.calculationText}</Text>
-        </View>
-        <View style={styles.buttons}>
-          <View style={styles.numbers}>
-            {rows}
-          </View>
-          <View style={styles.operations}>
-            {ops}
-          </View>
-        </View>
-      </View>
+        <ScrollView>
+          
+          <SafeAreaView style={{flex:1}}>
+          <ImageBackground style={{height:400, width:'100%'}}
+                           source={{uri: 'https://t3.ftcdn.net/jpg/02/11/52/42/360_F_211524227_Ett8aboQvVnROAFtqu3S1pW99Y3Th9vm.jpg'}}
+          />
+            
+          
+            <View bottom={16}>  
+              <Text style={{fontWeight:'bold', fontSize:80, textAlign:'center', textDecorationLine: 'underline'}}> {this.state.city} </Text>
+              <Text style={{ fontSize:40,textAlign:'center'}}>Temperature: {this.state.temp} &deg;C </Text>
+              <Text style={{ fontSize:20,textAlign:'right'}}>FEELS LIKE: {this.state.feels_like}&deg;C </Text>
+              <Text style={{ fontSize:20,textAlign:'right'}}>MINIMUM TEMPERATURE: {this.state.temp_min}&deg;C </Text>
+              <Text style={{ fontSize:20,textAlign:'right'}}>MAXIMUM TEMPERATURE: {this.state.temp_max} &deg;C</Text>
+              <Text style={{ fontSize:20,textAlign:'right'}}>PRESSURE: {this.state.pressure} Pa </Text>
+              <Text style={{ fontSize:20,textAlign:'right'}}>HUMIDITY: {this.state.humidity} g.m-3 </Text>
+            </View>
+            <StatusBar style="auto" />
+          </SafeAreaView> 
+
+      </ScrollView>
     );
   }
 }
-
-const styles = StyleSheet.create({
-    container: {
-      flex: 1
-    },
-    row: {
-      flexDirection: 'row',
-      flex: 1,
-      justifyContent: 'space-around',
-      alignItems: 'center'
-    },
-    btntext: {
-      fontSize: 25,
-      color: 'white'
-    },
-    
-    btn: {
-      flex: 1,
-      alignItems: 'center',
-      alignSelf: 'stretch',
-      justifyContent: 'center'
-    },
-    calculationText: {
-      fontSize: 24,
-      color: 'black'       
-    },
-    resultText: {
-      fontSize: 30,
-      color: '#808080'
-    },
-    result: {
-      flex: 2,
-      backgroundColor: 'white',
-      justifyContent: 'center',
-      alignItems: 'flex-end'
-    },
-    calculation: {
-      flex: 1,
-      backgroundColor: 'white',
-      justifyContent: 'center',
-      alignItems: 'flex-end'
-    },
-    buttons: {
-      flex: 7,
-      flexDirection: 'row'
-    },
-    numbers: {
-      flex: 3,
-      backgroundColor: '#051937',
-    },
-    operations: {
-      flex: 1,
-      justifyContent: 'space-around',
-      alignItems: 'stretch',
-      backgroundColor: '#090255'
-    }
-});
-
-
